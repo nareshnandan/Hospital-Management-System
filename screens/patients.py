@@ -292,6 +292,15 @@ def show_patients(content_frame):
             )
             return
 
+        # Validate Patient Name
+
+        if not name.replace(" ", "").isalpha():
+            messagebox.showwarning(
+                "Invalid Name",
+                "Patient name must contain only letters and spaces."
+            )
+            return
+
         # Validate Age
 
         try:
@@ -307,6 +316,22 @@ def show_patients(content_frame):
             messagebox.showwarning(
                 "Invalid Age",
                 "Please enter a valid age between 1 and 120."
+            )
+            return
+
+        # Validate Phone Number
+
+        if not phone.isdigit():
+            messagebox.showwarning(
+                "Invalid Phone Number",
+                "Phone number must contain only digits."
+            )
+            return
+
+        if len(phone) != 10:
+            messagebox.showwarning(
+                "Invalid Phone Number",
+                "Phone number must contain exactly 10 digits."
             )
             return
 
