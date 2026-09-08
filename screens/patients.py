@@ -362,6 +362,27 @@ def show_patients(content_frame):
         address_entry.delete(0, tk.END)
         blood_combo.set("")
 
+
+    def search_patients():
+        search_text = search_entry.get().lower()
+
+        for item in patient_table.get_children():
+            values = patient_table.item(item, "values")
+
+            patient_id = values[0].lower()
+            patient_name = values[1].lower()
+
+            if search_text in patient_id or search_text in patient_name:
+                patient_table.selection_set(item)
+                patient_table.focus(item)
+                patient_table.see(item)
+                return
+
+        messagebox.showinfo(
+            "Search Result",
+            "No patient found."
+        )
+
     # ========================================================
     # Register Button
     # ========================================================
@@ -404,6 +425,38 @@ def show_patients(content_frame):
         pady=(20, 10)
     )
 
+    # Search Frame
+
+    search_frame = tk.Frame(content_frame, bg="#ECEFF1")
+    search_frame.pack(fill="x", padx=20, pady=(10, 5))
+
+    search_label = tk.Label(
+        search_frame,
+        text="Search Patient:",
+        font=("Arial", 11, "bold"),
+        bg="#ECEFF1"
+    )
+    search_label.pack(side="left", padx=(0, 10))
+
+    search_entry = tk.Entry(
+        search_frame,
+        font=("Arial", 11),
+        width=30
+    )
+    search_entry.pack(side="left")
+    # Search Button
+    search_button = tk.Button(
+        search_frame,
+        text="Search",
+        font=("Arial", 10, "bold"),
+        bg="#1976D2",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=search_patients
+    )
+    search_button.pack(side="left", padx=10)
 
     # ========================================================
     # Patient Table
