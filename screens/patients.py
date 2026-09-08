@@ -292,6 +292,23 @@ def show_patients(content_frame):
             )
             return
 
+        # Validate Age
+
+        try:
+            age = int(age)
+        except ValueError:
+            messagebox.showwarning(
+                "Invalid Age",
+                "Age must be a number."
+            )
+            return
+
+        if age <= 0 or age > 120:
+            messagebox.showwarning(
+                "Invalid Age",
+                "Please enter a valid age between 1 and 120."
+            )
+            return
 
         # Generate Patient ID
         patient_number = len(patient_table.get_children()) + 1
