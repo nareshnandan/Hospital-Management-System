@@ -271,6 +271,32 @@ def show_patients(content_frame):
         pady=15
     )
 
+    # ========================================================
+    # Register Patient Function
+    # ========================================================
+
+    def register_patient():
+
+        name = name_entry.get()
+        age = age_entry.get()
+        gender = gender_combo.get()
+        phone = phone_entry.get()
+        address = address_entry.get()
+        blood_group = blood_combo.get()
+
+        patient_table.insert(
+            "",
+            "end",
+            values=(
+                "1",
+                name,
+                age,
+                gender,
+                phone,
+                address,
+                blood_group
+            )
+        )
 
     # ========================================================
     # Register Button
@@ -284,7 +310,8 @@ def show_patients(content_frame):
         fg="white",
         relief="flat",
         padx=20,
-        pady=8
+        pady=8,
+        command=register_patient
     )
 
     register_button.grid(
@@ -293,4 +320,145 @@ def show_patients(content_frame):
         padx=20,
         pady=20,
         sticky="e"
+    )
+
+    # ========================================================
+    # Registered Patients Section
+    # ========================================================
+
+    patients_title = tk.Label(
+        content_frame,
+        text="Registered Patients",
+        font=("Arial", 16, "bold"),
+        bg="#ECEFF1",
+        fg="#263238"
+    )
+
+    patients_title.pack(
+        anchor="w",
+        padx=30,
+        pady=(20, 10)
+    )
+
+
+    # ========================================================
+    # Patient Table
+    # ========================================================
+
+    table_frame = tk.Frame(
+        content_frame,
+        bg="white"
+    )
+
+    table_frame.pack(
+        padx=30,
+        pady=5,
+        fill="both",
+        expand=True
+    )
+
+
+    patient_table = ttk.Treeview(
+        table_frame,
+        columns=(
+            "id",
+            "name",
+            "age",
+            "gender",
+            "phone",
+            "address",
+            "blood"
+        ),
+        show="headings"
+    )
+
+
+    # Table Headings
+
+    patient_table.heading(
+        "id",
+        text="ID"
+    )
+
+    patient_table.heading(
+        "name",
+        text="Name"
+    )
+
+    patient_table.heading(
+        "age",
+        text="Age"
+    )
+
+    patient_table.heading(
+        "gender",
+        text="Gender"
+    )
+
+    patient_table.heading(
+        "phone",
+        text="Phone"
+    )
+
+    patient_table.heading(
+        "address",
+        text="Address"
+    )
+
+    patient_table.heading(
+        "blood",
+        text="Blood Group"
+    )
+
+
+    # Column Widths
+
+    patient_table.column(
+        "id",
+        width=50,
+        anchor="center"
+    )
+
+    patient_table.column(
+        "name",
+        width=150,
+        anchor="center"
+    )
+
+    patient_table.column(
+        "age",
+        width=60,
+        anchor="center"
+    )
+
+    patient_table.column(
+        "gender",
+        width=100,
+        anchor="center"
+    )
+
+    patient_table.column(
+        "phone",
+        width=130,
+        anchor="center"
+    )
+
+    patient_table.column(
+        "address",
+        width=180,
+        anchor="center"
+    )
+
+    patient_table.column(
+        "blood",
+        width=100,
+        anchor="center"
+    )
+
+
+    patient_table.pack(
+        fill="both",
+        expand=True,
+        padx=10,
+        pady=10
     )
