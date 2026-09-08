@@ -284,11 +284,15 @@ def show_patients(content_frame):
         address = address_entry.get()
         blood_group = blood_combo.get()
 
+        # Generate Patient ID
+        patient_number = len(patient_table.get_children()) + 1
+        patient_id = f"P{patient_number:03d}"
+
         patient_table.insert(
             "",
             "end",
             values=(
-                "1",
+                patient_id,
                 name,
                 age,
                 gender,
@@ -297,6 +301,15 @@ def show_patients(content_frame):
                 blood_group
             )
         )
+
+
+        # Clear form fields
+        name_entry.delete(0, tk.END)
+        age_entry.delete(0, tk.END)
+        gender_combo.set("")
+        phone_entry.delete(0, tk.END)
+        address_entry.delete(0, tk.END)
+        blood_combo.set("")
 
     # ========================================================
     # Register Button
