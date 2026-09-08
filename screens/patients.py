@@ -1,6 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
-
+from tkinter import ttk, messagebox
 
 def show_patients(content_frame):
 
@@ -283,6 +282,16 @@ def show_patients(content_frame):
         phone = phone_entry.get()
         address = address_entry.get()
         blood_group = blood_combo.get()
+
+        # Validate required fields
+
+        if not name or not age or not gender or not phone or not address or not blood_group:
+            tk.messagebox.showwarning(
+                "Missing Information",
+                "Please fill in all patient details."
+            )
+            return
+
 
         # Generate Patient ID
         patient_number = len(patient_table.get_children()) + 1
