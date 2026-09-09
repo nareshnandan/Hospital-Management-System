@@ -383,6 +383,14 @@ def show_patients(content_frame):
             "No patient found."
         )
 
+    # Clear Search
+
+    def clear_search():
+        search_entry.delete(0, tk.END)
+
+        for item in patient_table.selection():
+            patient_table.selection_remove(item)
+
     # ========================================================
     # Register Button
     # ========================================================
@@ -444,6 +452,7 @@ def show_patients(content_frame):
         width=30
     )
     search_entry.pack(side="left")
+
     # Search Button
     search_button = tk.Button(
         search_frame,
@@ -457,6 +466,20 @@ def show_patients(content_frame):
         command=search_patients
     )
     search_button.pack(side="left", padx=10)
+
+    # Clear button
+    clear_button = tk.Button(
+        search_frame,
+        text="Clear",
+        font=("Arial", 10, "bold"),
+        bg="#757575",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=clear_search
+    )
+    clear_button.pack(side="left")
 
     # ========================================================
     # Patient Table
