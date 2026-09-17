@@ -3,6 +3,7 @@ from datetime import datetime
 
 from screens.dashboard import show_dashboard
 from screens.patients import show_patients
+from screens.doctors import show_doctors
 
 
 # ============================================================
@@ -153,7 +154,8 @@ doctors_button = tk.Button(
     font=("Arial", 12),
     bg="#263238",
     fg="white",
-    relief="flat"
+    relief="flat",
+    command=lambda: show_doctors(content_frame)
 )
 
 doctors_button.pack(
