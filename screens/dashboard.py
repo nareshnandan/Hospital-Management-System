@@ -78,7 +78,6 @@ def show_dashboard(content_frame):
         padx=(0, 15)
     )
 
-
     patient_title = tk.Label(
         patient_card,
         text="Total Patients",
@@ -91,7 +90,6 @@ def show_dashboard(content_frame):
         pady=(20, 5)
     )
 
-
     patient_count = tk.Label(
         patient_card,
         text="125",
@@ -101,7 +99,6 @@ def show_dashboard(content_frame):
     )
 
     patient_count.pack()
-
 
     # ========================================================
     # Doctor Card
@@ -132,7 +129,6 @@ def show_dashboard(content_frame):
         pady=(20, 5)
     )
 
-
     doctor_count = tk.Label(
         doctor_card,
         text="12",
@@ -142,7 +138,6 @@ def show_dashboard(content_frame):
     )
 
     doctor_count.pack()
-
 
     # ========================================================
     # Appointment Card

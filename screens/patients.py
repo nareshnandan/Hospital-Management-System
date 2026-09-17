@@ -10,6 +10,208 @@ def show_patients(content_frame):
     for widget in content_frame.winfo_children():
         widget.destroy()
 
+    # Stores the Treeview item currently being edited
+    editing_patient = None
+
+    # ========================================================
+    # Register Patient Function
+    # ========================================================
+
+    def register_patient():
+
+        nonlocal editing_patient
+
+        name = name_entry.get()
+        age = age_entry.get()
+        gender = gender_combo.get()
+        phone = phone_entry.get()
+        address = address_entry.get()
+        blood_group = blood_combo.get()
+
+        # Validate required fields
+
+        if not name or not age or not gender or not phone or not address or not blood_group:
+            tk.messagebox.showwarning(
+                "Missing Information",
+                "Please fill in all patient details."
+            )
+            return
+
+        # Validate Patient Name
+
+        if not name.replace(" ", "").isalpha():
+            messagebox.showwarning(
+                "Invalid Name",
+                "Patient name must contain only letters and spaces."
+            )
+            return
+
+        # Validate Age
+
+        try:
+            age = int(age)
+        except ValueError:
+            messagebox.showwarning(
+                "Invalid Age",
+                "Age must be a number."
+            )
+            return
+
+        if age <= 0 or age > 120:
+            messagebox.showwarning(
+                "Invalid Age",
+                "Please enter a valid age between 1 and 120."
+            )
+            return
+
+        # Validate Phone Number
+
+        if not phone.isdigit():
+            messagebox.showwarning(
+                "Invalid Phone Number",
+                "Phone number must contain only digits."
+            )
+            return
+
+        if len(phone) != 10:
+            messagebox.showwarning(
+                "Invalid Phone Number",
+                "Phone number must contain exactly 10 digits."
+            )
+            return
+
+        # Check whether we are editing an existing patient
+        if editing_patient is not None:
+
+            # Get the existing Patient ID
+            patient_id = patient_table.item(
+                editing_patient,
+                "values"
+            )[0]
+
+            # Update the existing patient
+            patient_table.item(
+                editing_patient,
+                values=(
+                    patient_id,
+                    name,
+                    age,
+                    gender,
+                    phone,
+                    address,
+                    blood_group
+                )
+            )
+
+            messagebox.showinfo(
+                "Patient Updated",
+                "Patient details updated successfully."
+            )
+
+            # Exit edit mode
+            editing_patient = None
+
+            # Change button back to Register Patient
+            register_button.config(
+                text="Register Patient"
+            )
+
+        else:
+
+            # Generate new Patient ID
+            patient_number = len(patient_table.get_children()) + 1
+            patient_id = f"P{patient_number:03d}"
+
+            # Add new patient
+            patient_table.insert(
+                "",
+                "end",
+                values=(
+                    patient_id,
+                    name,
+                    age,
+                    gender,
+                    phone,
+                    address,
+                    blood_group
+                )
+            )
+
+        # Clear form fields
+        name_entry.delete(0, tk.END)
+        age_entry.delete(0, tk.END)
+        gender_combo.set("")
+        phone_entry.delete(0, tk.END)
+        address_entry.delete(0, tk.END)
+        blood_combo.set("")
+
+    # --------------------------------------------------
+    # Search Patient
+    # --------------------------------------------------
+
+    def search_patients():
+        search_text = search_entry.get().lower()
+
+        for item in patient_table.get_children():
+            values = patient_table.item(item, "values")
+
+            patient_id = values[0].lower()
+            patient_name = values[1].lower()
+
+            if search_text in patient_id or search_text in patient_name:
+                patient_table.selection_set(item)
+                patient_table.focus(item)
+                patient_table.see(item)
+                return
+
+        messagebox.showinfo(
+            "Search Result",
+            "No patient found."
+        )
+
+    # --------------------------------------------------
+    # Clear Search
+    # --------------------------------------------------
+
+    def clear_search():
+        search_entry.delete(0, tk.END)
+
+        for item in patient_table.selection():
+            patient_table.selection_remove(item)
+
+    # --------------------------------------------------
+    # Edit Patient
+    # --------------------------------------------------
+
+    def edit_patient():
+        selected_item = patient_table.selection()
+
+        if not selected_item:
+            messagebox.showwarning(
+                "No Patient Selected",
+                "Please select a patient from the table."
+            )
+            return
+
+        patient_data = patient_table.item(selected_item[0], "values")
+        nonlocal editing_patient
+        editing_patient = selected_item[0]
+
+        name_entry.delete(0, tk.END)
+        name_entry.insert(0, patient_data[1])
+
+        age_entry.delete(0, tk.END)
+        age_entry.insert(0, patient_data[2])
+
+        gender_combo.set(patient_data[3])
+
+        phone_entry.delete(0, tk.END)
+        phone_entry.insert(0, patient_data[4])
+
+        address_entry.delete(0, tk.END)
+        address_entry.insert(0, patient_data[5])
+
+        blood_combo.set(patient_data[6])
 
     # ========================================================
     # Page Title
@@ -115,7 +317,6 @@ def show_patients(content_frame):
         pady=15
     )
 
-
     # ========================================================
     # Gender
     # ========================================================
@@ -176,7 +377,6 @@ def show_patients(content_frame):
         sticky="w"
     )
 
-
     phone_entry = tk.Entry(
         form_frame,
         font=("Arial", 11),
@@ -189,7 +389,6 @@ def show_patients(content_frame):
         padx=20,
         pady=15
     )
-
 
     # ========================================================
     # Address
@@ -211,7 +410,6 @@ def show_patients(content_frame):
         sticky="w"
     )
 
-
     address_entry = tk.Entry(
         form_frame,
         font=("Arial", 11),
@@ -224,7 +422,6 @@ def show_patients(content_frame):
         padx=20,
         pady=15
     )
-
 
     # ========================================================
     # Blood Group
@@ -269,128 +466,7 @@ def show_patients(content_frame):
         padx=20,
         pady=15
     )
-
-    # ========================================================
-    # Register Patient Function
-    # ========================================================
-
-    def register_patient():
-
-        name = name_entry.get()
-        age = age_entry.get()
-        gender = gender_combo.get()
-        phone = phone_entry.get()
-        address = address_entry.get()
-        blood_group = blood_combo.get()
-
-        # Validate required fields
-
-        if not name or not age or not gender or not phone or not address or not blood_group:
-            tk.messagebox.showwarning(
-                "Missing Information",
-                "Please fill in all patient details."
-            )
-            return
-
-        # Validate Patient Name
-
-        if not name.replace(" ", "").isalpha():
-            messagebox.showwarning(
-                "Invalid Name",
-                "Patient name must contain only letters and spaces."
-            )
-            return
-
-        # Validate Age
-
-        try:
-            age = int(age)
-        except ValueError:
-            messagebox.showwarning(
-                "Invalid Age",
-                "Age must be a number."
-            )
-            return
-
-        if age <= 0 or age > 120:
-            messagebox.showwarning(
-                "Invalid Age",
-                "Please enter a valid age between 1 and 120."
-            )
-            return
-
-        # Validate Phone Number
-
-        if not phone.isdigit():
-            messagebox.showwarning(
-                "Invalid Phone Number",
-                "Phone number must contain only digits."
-            )
-            return
-
-        if len(phone) != 10:
-            messagebox.showwarning(
-                "Invalid Phone Number",
-                "Phone number must contain exactly 10 digits."
-            )
-            return
-
-        # Generate Patient ID
-        patient_number = len(patient_table.get_children()) + 1
-        patient_id = f"P{patient_number:03d}"
-
-        patient_table.insert(
-            "",
-            "end",
-            values=(
-                patient_id,
-                name,
-                age,
-                gender,
-                phone,
-                address,
-                blood_group
-            )
-        )
-
-
-        # Clear form fields
-        name_entry.delete(0, tk.END)
-        age_entry.delete(0, tk.END)
-        gender_combo.set("")
-        phone_entry.delete(0, tk.END)
-        address_entry.delete(0, tk.END)
-        blood_combo.set("")
-
-
-    def search_patients():
-        search_text = search_entry.get().lower()
-
-        for item in patient_table.get_children():
-            values = patient_table.item(item, "values")
-
-            patient_id = values[0].lower()
-            patient_name = values[1].lower()
-
-            if search_text in patient_id or search_text in patient_name:
-                patient_table.selection_set(item)
-                patient_table.focus(item)
-                patient_table.see(item)
-                return
-
-        messagebox.showinfo(
-            "Search Result",
-            "No patient found."
-        )
-
-    # Clear Search
-
-    def clear_search():
-        search_entry.delete(0, tk.END)
-
-        for item in patient_table.selection():
-            patient_table.selection_remove(item)
-
+    
     # ========================================================
     # Register Button
     # ========================================================
@@ -480,6 +556,20 @@ def show_patients(content_frame):
         command=clear_search
     )
     clear_button.pack(side="left")
+
+    # edit button
+    edit_button = tk.Button(
+        search_frame,
+        text="Edit Patient",
+        font=("Arial", 10, "bold"),
+        bg="#388E3C",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=edit_patient
+    )
+    edit_button.pack(side="left", padx=10)
 
     # ========================================================
     # Patient Table
@@ -595,10 +685,11 @@ def show_patients(content_frame):
         anchor="center"
     )
 
-
     patient_table.pack(
         fill="both",
         expand=True,
         padx=10,
         pady=10
     )
+
+    
