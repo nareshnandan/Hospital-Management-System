@@ -213,6 +213,45 @@ def show_patients(content_frame):
 
         blood_combo.set(patient_data[6])
 
+    # --------------------------------------------------
+    # Delete Patient
+    # --------------------------------------------------
+
+    def delete_patient():
+
+        selected_item = patient_table.selection()
+
+        if not selected_item:
+            messagebox.showwarning(
+                "No Patient Selected",
+                "Please select a patient from the table."
+            )
+            return
+
+        patient_data = patient_table.item(
+            selected_item[0],
+            "values"
+        )
+
+        patient_id = patient_data[0]
+        patient_name = patient_data[1]
+
+        confirm = messagebox.askyesno(
+            "Delete Patient",
+            f"Are you sure you want to delete {patient_name} ({patient_id})?"
+        )
+
+        if not confirm:
+            return
+
+        patient_table.delete(selected_item[0])
+
+        messagebox.showinfo(
+            "Patient Deleted",
+            "Patient deleted successfully."
+        )
+
+        
     # ========================================================
     # Page Title
     # ========================================================
@@ -571,6 +610,20 @@ def show_patients(content_frame):
     )
     edit_button.pack(side="left", padx=10)
 
+    # Delete button
+    delete_button = tk.Button(
+        search_frame,
+        text="Delete Patient",
+        font=("Arial", 10, "bold"),
+        bg="#D32F2F",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=delete_patient
+    )
+    delete_button.pack(side="left", padx=10)
+
     # ========================================================
     # Patient Table
     # ========================================================
@@ -692,4 +745,3 @@ def show_patients(content_frame):
         pady=10
     )
 
-    
