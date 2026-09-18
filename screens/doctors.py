@@ -272,13 +272,84 @@ def show_doctors(content_frame):
         experience = experience_entry.get().strip()
         fee = fee_entry.get().strip()
 
-        # Check required fields
+        # ----------------------------------------------------
+        # Required Field Validation
+        # ----------------------------------------------------
 
         if not doctor_name or not specialization or not phone or not email or not experience or not fee:
+
             messagebox.showwarning(
                 "Missing Information",
                 "Please fill in all doctor details."
             )
+
+            return
+
+        # ----------------------------------------------------
+        # Doctor Name Validation
+        # Only letters and spaces are allowed
+        # ----------------------------------------------------
+
+        if not all(char.isalpha() or char.isspace() for char in doctor_name):
+
+            messagebox.showwarning(
+                "Invalid Doctor Name",
+                "Doctor name should contain only letters and spaces."
+            )
+
+            return
+
+        # ----------------------------------------------------
+        # Mobile Number Validation
+        # Exactly 10 digits
+        # ----------------------------------------------------
+
+        if not phone.isdigit() or len(phone) != 10:
+
+            messagebox.showwarning(
+                "Invalid Mobile Number",
+                "Mobile number must contain exactly 10 digits."
+            )
+
+            return
+
+        # ----------------------------------------------------
+        # Experience Validation
+        # Numbers only and between 0 and 60
+        # ----------------------------------------------------
+
+        if not experience.isdigit():
+
+            messagebox.showwarning(
+                "Invalid Experience",
+                "Experience should contain numbers only."
+            )
+
+            return
+
+        experience_value = int(experience)
+
+        if experience_value < 0 or experience_value > 60:
+
+            messagebox.showwarning(
+                "Invalid Experience",
+                "Experience must be between 0 and 60 years."
+            )
+
+            return
+
+        # ----------------------------------------------------
+        # Consultation Fee Validation
+        # Numbers only
+        # ----------------------------------------------------
+
+        if not fee.isdigit():
+
+            messagebox.showwarning(
+                "Invalid Consultation Fee",
+                "Consultation fee should contain numbers only."
+            )
+
             return
 
         # ----------------------------------------------------
@@ -287,13 +358,11 @@ def show_doctors(content_frame):
 
         if editing_doctor is not None:
 
-            # Get existing Doctor ID
             doctor_id = doctor_table.item(
                 editing_doctor,
                 "values"
             )[0]
 
-            # Update existing row
             doctor_table.item(
                 editing_doctor,
                 values=(
@@ -312,10 +381,8 @@ def show_doctors(content_frame):
                 "Doctor details updated successfully."
             )
 
-            # Exit edit mode
             editing_doctor = None
 
-            # Change button back
             register_button.config(
                 text="Register Doctor"
             )
@@ -326,14 +393,31 @@ def show_doctors(content_frame):
 
         else:
 
-            # Generate new Doctor ID
-            doctor_number = len(
-                doctor_table.get_children()
-            ) + 1
+            # Generate next Doctor ID
+            doctor_number = 0
+
+            for item in doctor_table.get_children():
+
+                doctor_data = doctor_table.item(
+                    item,
+                    "values"
+                )
+
+                existing_id = doctor_data[0]
+
+                try:
+                    existing_number = int(existing_id[1:])
+
+                    if existing_number > doctor_number:
+                        doctor_number = existing_number
+
+                except ValueError:
+                    pass
+
+            doctor_number += 1
 
             doctor_id = f"D{doctor_number:03d}"
 
-            # Add new doctor
             doctor_table.insert(
                 "",
                 "end",
@@ -385,7 +469,9 @@ def show_doctors(content_frame):
         )
 
         # Clear table selection
+
         for item in doctor_table.selection():
+
             doctor_table.selection_remove(item)
 
     # ========================================================
@@ -552,6 +638,109 @@ def show_doctors(content_frame):
         register_button.config(
             text="Update Doctor"
         )
+    
+    # ========================================================
+    # Delete Doctor
+    # ========================================================
+
+    def delete_doctor():
+
+        nonlocal editing_doctor
+
+        selected_item = doctor_table.selection()
+
+        # ----------------------------------------------------
+        # Check whether a doctor is selected
+        # ----------------------------------------------------
+
+        if not selected_item:
+
+            messagebox.showwarning(
+                "No Doctor Selected",
+                "Please select a doctor from the table."
+            )
+
+            return
+
+        # Get selected doctor details
+        doctor_data = doctor_table.item(
+            selected_item[0],
+            "values"
+        )
+
+        doctor_id = doctor_data[0]
+        doctor_name = doctor_data[1]
+
+        # ----------------------------------------------------
+        # Confirmation Before Delete
+        # ----------------------------------------------------
+
+        confirm_delete = messagebox.askyesno(
+            "Delete Doctor",
+            f"Are you sure you want to delete\n"
+            f"Doctor {doctor_id} - {doctor_name}?"
+        )
+
+        if not confirm_delete:
+            return
+
+        # ----------------------------------------------------
+        # Delete Doctor
+        # ----------------------------------------------------
+
+        doctor_table.delete(
+            selected_item[0]
+        )
+
+        # ----------------------------------------------------
+        # Reset Edit Mode
+        # ----------------------------------------------------
+
+        editing_doctor = None
+
+        register_button.config(
+            text="Register Doctor"
+        )
+
+        # ----------------------------------------------------
+        # Clear Form
+        # ----------------------------------------------------
+
+        doctor_name_entry.delete(
+            0,
+            tk.END
+        )
+
+        specialization_combo.set("")
+
+        phone_entry.delete(
+            0,
+            tk.END
+        )
+
+        email_entry.delete(
+            0,
+            tk.END
+        )
+
+        experience_entry.delete(
+            0,
+            tk.END
+        )
+
+        fee_entry.delete(
+            0,
+            tk.END
+        )
+
+        # ----------------------------------------------------
+        # Show Success Message
+        # ----------------------------------------------------
+
+        messagebox.showinfo(
+            "Doctor Deleted",
+            f"Doctor {doctor_id} deleted successfully."
+        )
 
     # ========================================================
     # Register Doctor Button
@@ -673,9 +862,7 @@ def show_doctors(content_frame):
         side="left"
     )
 
-    # ========================================================
-    # Edit Doctor Button                                      
-    # ========================================================
+    # Edit Button                                      
 
     edit_button = tk.Button(
         search_frame,
@@ -692,6 +879,24 @@ def show_doctors(content_frame):
     edit_button.pack(
         side="left",
         padx=10
+    )
+    
+    # Delete Button
+    delete_button = tk.Button(
+        search_frame,
+        text="Delete Doctor",
+        font=("Arial", 10, "bold"),
+        bg="#D32F2F",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=delete_doctor
+    )
+
+    delete_button.pack(
+        side="left",
+        padx=5
     )
 
     # ========================================================

@@ -119,7 +119,29 @@ def show_patients(content_frame):
         else:
 
             # Generate new Patient ID
-            patient_number = len(patient_table.get_children()) + 1
+            # Generate next Patient ID
+            patient_number = 0
+
+            for item in patient_table.get_children():
+
+                patient_data = patient_table.item(
+                    item,
+                    "values"
+                )
+
+                existing_id = patient_data[0]
+
+                try:
+                    existing_number = int(existing_id[1:])
+
+                    if existing_number > patient_number:
+                        patient_number = existing_number
+
+                except ValueError:
+                    pass
+
+            patient_number += 1
+
             patient_id = f"P{patient_number:03d}"
 
             # Add new patient
@@ -251,7 +273,7 @@ def show_patients(content_frame):
             "Patient deleted successfully."
         )
 
-        
+       
     # ========================================================
     # Page Title
     # ========================================================
