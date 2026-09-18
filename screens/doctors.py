@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 
 def show_doctors(content_frame):
@@ -10,6 +10,9 @@ def show_doctors(content_frame):
 
     for widget in content_frame.winfo_children():
         widget.destroy()
+
+    # Stores the Treeview item currently being edited
+    editing_doctor = None
 
     # ========================================================
     # Page Title
@@ -255,62 +258,299 @@ def show_doctors(content_frame):
     )
 
     # ========================================================
-    # Register Doctor Function
+    # Register / Update Doctor Function
     # ========================================================
 
     def register_doctor():
 
-        doctor_name = doctor_name_entry.get()
+        nonlocal editing_doctor
+
+        doctor_name = doctor_name_entry.get().strip()
         specialization = specialization_combo.get()
-        phone = phone_entry.get()
-        email = email_entry.get()
-        experience = experience_entry.get()
-        fee = fee_entry.get()
+        phone = phone_entry.get().strip()
+        email = email_entry.get().strip()
+        experience = experience_entry.get().strip()
+        fee = fee_entry.get().strip()
 
         # Check required fields
 
         if not doctor_name or not specialization or not phone or not email or not experience or not fee:
-            tk.messagebox.showwarning(
+            messagebox.showwarning(
                 "Missing Information",
                 "Please fill in all doctor details."
             )
             return
 
-        # Generate Doctor ID
+        # ----------------------------------------------------
+        # Update Existing Doctor
+        # ----------------------------------------------------
 
-        doctor_number = len(doctor_table.get_children()) + 1
-        doctor_id = f"D{doctor_number:03d}"
+        if editing_doctor is not None:
 
-        # Add doctor to table
+            # Get existing Doctor ID
+            doctor_id = doctor_table.item(
+                editing_doctor,
+                "values"
+            )[0]
 
-        doctor_table.insert(
-            "",
-            "end",
-            values=(
-                doctor_id,
-                doctor_name,
-                specialization,
-                phone,
-                email,
-                experience,
-                fee
+            # Update existing row
+            doctor_table.item(
+                editing_doctor,
+                values=(
+                    doctor_id,
+                    doctor_name,
+                    specialization,
+                    phone,
+                    email,
+                    experience,
+                    fee
+                )
             )
+
+            messagebox.showinfo(
+                "Doctor Updated",
+                "Doctor details updated successfully."
+            )
+
+            # Exit edit mode
+            editing_doctor = None
+
+            # Change button back
+            register_button.config(
+                text="Register Doctor"
+            )
+
+        # ----------------------------------------------------
+        # Register New Doctor
+        # ----------------------------------------------------
+
+        else:
+
+            # Generate new Doctor ID
+            doctor_number = len(
+                doctor_table.get_children()
+            ) + 1
+
+            doctor_id = f"D{doctor_number:03d}"
+
+            # Add new doctor
+            doctor_table.insert(
+                "",
+                "end",
+                values=(
+                    doctor_id,
+                    doctor_name,
+                    specialization,
+                    phone,
+                    email,
+                    experience,
+                    fee
+                )
+            )
+
+            messagebox.showinfo(
+                "Doctor Registered",
+                f"Doctor {doctor_id} registered successfully."
+            )
+
+        # ----------------------------------------------------
+        # Clear Form
+        # ----------------------------------------------------
+
+        doctor_name_entry.delete(
+            0,
+            tk.END
         )
 
-        # Clear form
-
-        doctor_name_entry.delete(0, tk.END)
         specialization_combo.set("")
-        phone_entry.delete(0, tk.END)
-        email_entry.delete(0, tk.END)
-        experience_entry.delete(0, tk.END)
-        fee_entry.delete(0, tk.END)
 
-        # Success message
+        phone_entry.delete(
+            0,
+            tk.END
+        )
 
-        tk.messagebox.showinfo(
-            "Doctor Registered",
-            f"Doctor {doctor_id} registered successfully."
+        email_entry.delete(
+            0,
+            tk.END
+        )
+
+        experience_entry.delete(
+            0,
+            tk.END
+        )
+
+        fee_entry.delete(
+            0,
+            tk.END
+        )
+
+        # Clear table selection
+        for item in doctor_table.selection():
+            doctor_table.selection_remove(item)
+
+    # ========================================================
+    # Search Doctor
+    # ========================================================
+
+    def search_doctors():
+
+        search_text = search_entry.get().lower()
+
+        if not search_text:
+            messagebox.showwarning(
+                "Search",
+                "Please enter a Doctor ID or Doctor Name."
+            )
+            return
+
+        for item in doctor_table.get_children():
+
+            values = doctor_table.item(
+                item,
+                "values"
+            )
+
+            doctor_id = values[0].lower()
+            doctor_name = values[1].lower()
+
+            if search_text in doctor_id or search_text in doctor_name:
+
+                doctor_table.selection_set(item)
+                doctor_table.focus(item)
+                doctor_table.see(item)
+
+                return
+
+        messagebox.showinfo(
+            "Search Result",
+            "No doctor found."
+        )
+
+    # ========================================================
+    # Clear Search
+    # ========================================================
+
+    def clear_search():
+
+        search_entry.delete(
+            0,
+            tk.END
+        )
+
+        for item in doctor_table.selection():
+
+            doctor_table.selection_remove(item)
+
+    # ========================================================
+    # Edit Doctor
+    # ========================================================
+
+    def edit_doctor():
+
+        selected_item = doctor_table.selection()
+
+        # Check whether a doctor is selected
+        if not selected_item:
+
+            messagebox.showwarning(
+                "No Doctor Selected",
+                "Please select a doctor from the table."
+            )
+
+            return
+
+        doctor_data = doctor_table.item(
+            selected_item[0],
+            "values"
+        )
+
+        nonlocal editing_doctor
+
+        # Remember selected doctor
+        editing_doctor = selected_item[0]
+
+        # ----------------------------------------------------
+        # Load Doctor Name
+        # ----------------------------------------------------
+
+        doctor_name_entry.delete(
+            0,
+            tk.END
+        )
+
+        doctor_name_entry.insert(
+            0,
+            doctor_data[1]
+        )
+
+        # ----------------------------------------------------
+        # Load Specialization
+        # ----------------------------------------------------
+
+        specialization_combo.set(
+            doctor_data[2]
+        )
+
+        # ----------------------------------------------------
+        # Load Phone
+        # ----------------------------------------------------
+
+        phone_entry.delete(
+            0,
+            tk.END
+        )
+
+        phone_entry.insert(
+            0,
+            doctor_data[3]
+        )
+
+        # ----------------------------------------------------
+        # Load Email
+        # ----------------------------------------------------
+
+        email_entry.delete(
+            0,
+            tk.END
+        )
+
+        email_entry.insert(
+            0,
+            doctor_data[4]
+        )
+
+        # ----------------------------------------------------
+        # Load Experience
+        # ----------------------------------------------------
+
+        experience_entry.delete(
+            0,
+            tk.END
+        )
+
+        experience_entry.insert(
+            0,
+            doctor_data[5]
+        )
+
+        # ----------------------------------------------------
+        # Load Consultation Fee
+        # ----------------------------------------------------
+
+        fee_entry.delete(
+            0,
+            tk.END
+        )
+
+        fee_entry.insert(
+            0,
+            doctor_data[6]
+        )
+
+        # Change button text
+
+        register_button.config(
+            text="Update Doctor"
         )
 
     # ========================================================
@@ -353,6 +593,105 @@ def show_doctors(content_frame):
         anchor="w",
         padx=30,
         pady=(20, 10)
+    )
+
+    # ========================================================
+    # Search Frame
+    # ========================================================
+
+    search_frame = tk.Frame(
+        content_frame,
+        bg="#ECEFF1"
+    )
+
+    search_frame.pack(
+        fill="x",
+        padx=20,
+        pady=(10, 5)
+    )
+
+    # Search Label
+
+    search_label = tk.Label(
+        search_frame,
+        text="Search Doctor:",
+        font=("Arial", 11, "bold"),
+        bg="#ECEFF1"
+    )
+
+    search_label.pack(
+        side="left",
+        padx=(0, 10)
+    )
+
+    # Search Entry
+
+    search_entry = tk.Entry(
+        search_frame,
+        font=("Arial", 11),
+        width=30
+    )
+
+    search_entry.pack(
+        side="left"
+    )
+
+    # Search Button
+
+    search_button = tk.Button(
+        search_frame,
+        text="Search",
+        font=("Arial", 10, "bold"),
+        bg="#1976D2",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=search_doctors
+    )
+
+    search_button.pack(
+        side="left",
+        padx=10
+    )
+
+    # Clear Button
+
+    clear_button = tk.Button(
+        search_frame,
+        text="Clear",
+        font=("Arial", 10, "bold"),
+        bg="#757575",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=clear_search
+    )
+
+    clear_button.pack(
+        side="left"
+    )
+
+    # ========================================================
+    # Edit Doctor Button                                      
+    # ========================================================
+
+    edit_button = tk.Button(
+        search_frame,
+        text="Edit Doctor",
+        font=("Arial", 10, "bold"),
+        bg="#388E3C",
+        fg="white",
+        relief="flat",
+        padx=15,
+        pady=5,
+        command=edit_doctor
+    )
+
+    edit_button.pack(
+        side="left",
+        padx=10
     )
 
     # ========================================================
@@ -480,4 +819,4 @@ def show_doctors(content_frame):
         padx=10,
         pady=10
     )
-
+    
