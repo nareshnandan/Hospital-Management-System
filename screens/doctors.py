@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from screens import data
 
 
 def show_doctors(content_frame):
@@ -376,10 +377,19 @@ def show_doctors(content_frame):
                 )
             )
 
-            messagebox.showinfo(
+            # Update shared doctor data
+            for doctor in data.doctors:
+                if doctor["id"] == doctor_id:
+                    doctor["name"] = doctor_name
+                    doctor["specialization"] = specialization
+                    break
+
+            messagebox.showinfo (
                 "Doctor Updated",
                 "Doctor details updated successfully."
             )
+
+
 
             editing_doctor = None
 
@@ -431,6 +441,13 @@ def show_doctors(content_frame):
                     fee
                 )
             )
+
+            # Store doctor in shared data
+            data.doctors.append({
+                "id": doctor_id,
+                "name": doctor_name,
+                "specialization": specialization
+            })
 
             messagebox.showinfo(
                 "Doctor Registered",

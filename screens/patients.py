@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from screens import data
 
 def show_patients(content_frame):
 
@@ -103,6 +104,12 @@ def show_patients(content_frame):
                 )
             )
 
+            # Update shared patient data
+            for patient in data.patients:
+                if patient["id"] == patient_id:
+                    patient["name"] = name
+                    break
+
             messagebox.showinfo(
                 "Patient Updated",
                 "Patient details updated successfully."
@@ -157,6 +164,17 @@ def show_patients(content_frame):
                     address,
                     blood_group
                 )
+            )
+
+            # Store patient in shared data
+            data.patients.append({
+                "id": patient_id,
+                "name": name
+            })
+
+            messagebox.showinfo(
+                "Patient Registered",
+                f"Patient {patient_id} registered successfully."
             )
 
         # Clear form fields
@@ -267,6 +285,12 @@ def show_patients(content_frame):
             return
 
         patient_table.delete(selected_item[0])
+
+        # Remove patient from shared data
+        data.patients[:] = [
+            patient for patient in data.patients
+            if patient["id"] != patient_id
+        ]
 
         messagebox.showinfo(
             "Patient Deleted",
