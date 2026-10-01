@@ -4,8 +4,10 @@ from datetime import datetime
 from screens.dashboard import show_dashboard
 from screens.patients import show_patients
 from screens.doctors import show_doctors
+from screens.appointments import show_appointments
+from screens.database import create_tables
 
-
+create_tables()
 # ============================================================
 # Main Window
 # ============================================================
@@ -172,7 +174,8 @@ appointments_button = tk.Button(
     font=("Arial", 12),
     bg="#263238",
     fg="white",
-    relief="flat"
+    relief="flat",
+    command=lambda: show_appointments(content_frame)
 )
 
 appointments_button.pack(

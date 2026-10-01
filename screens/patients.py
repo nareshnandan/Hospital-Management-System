@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from screens import data
+from screens.database import get_connection
 
 def show_patients(content_frame):
 
@@ -171,6 +172,30 @@ def show_patients(content_frame):
                 "id": patient_id,
                 "name": name
             })
+
+            # Save patient permanently in SQLite
+            connection = get_connection()
+            cursor = connection.cursor()
+
+            cursor.execute(
+                """
+                INSERT INTO patients
+                (id, name, age, gender, phone, address, blood_group)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    patient_id,
+                    name,
+                    age,
+                    gender,
+                    phone,
+                    address,
+                    blood_group
+                )
+            )
+
+            connection.commit()
+            connection.close()
 
             messagebox.showinfo(
                 "Patient Registered",
@@ -791,3 +816,46 @@ def show_patients(content_frame):
         pady=10
     )
 
+
+    # ========================================================
+    # Load Patients From Database
+    # ========================================================
+
+    def load_patients():
+
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            SELECT id, name, age, gender, phone, address, blood_group
+            FROM patients
+            ORDER BY id
+        """)
+
+        patients = cursor.fetchall()
+
+        connection.close()
+
+        # Clear existing table rows
+        for item in patient_table.get_children():
+            patient_table.delete(item)
+
+        # Add database records to table
+        for patient in patients:
+
+            patient_table.insert(
+                "",
+                "end",
+                values=patient
+            )
+
+        # Update shared data
+        data.patients.clear()
+
+        for patient in patients:
+
+            data.patients.append({
+                "id": patient[0],
+                "name": patient[1]
+            })
+    load_patients()
