@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from screens import data
-
+from screens.database import get_connection
 
 def show_doctors(content_frame):
 
@@ -384,6 +384,35 @@ def show_doctors(content_frame):
                     doctor["specialization"] = specialization
                     break
 
+            # Update doctor in SQLite
+            connection = get_connection()
+            cursor = connection.cursor()
+
+            cursor.execute(
+                """
+                UPDATE doctors
+                SET name = ?,
+                    specialization = ?,
+                    phone = ?,
+                    email = ?,
+                    experience = ?,
+                    fee = ?
+                WHERE id = ?
+                """,
+                (
+                    doctor_name,
+                    specialization,
+                    phone,
+                    email,
+                    experience,
+                    fee,
+                    doctor_id
+                )
+            )
+
+            connection.commit()
+            connection.close()
+
             messagebox.showinfo (
                 "Doctor Updated",
                 "Doctor details updated successfully."
@@ -448,6 +477,30 @@ def show_doctors(content_frame):
                 "name": doctor_name,
                 "specialization": specialization
             })
+
+            # Save doctor permanently in SQLite
+            connection = get_connection()
+            cursor = connection.cursor()
+
+            cursor.execute(
+                """
+                INSERT INTO doctors
+                (id, name, specialization, phone, email, experience, fee)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    doctor_id,
+                    doctor_name,
+                    specialization,
+                    phone,
+                    email,
+                    experience,
+                    fee
+                )
+            )
+
+            connection.commit()
+            connection.close()
 
             messagebox.showinfo(
                 "Doctor Registered",
@@ -710,6 +763,30 @@ def show_doctors(content_frame):
         )
 
         # ----------------------------------------------------
+        # Remove Doctor From Shared Data
+        # ----------------------------------------------------
+
+        data.doctors[:] = [
+            doctor for doctor in data.doctors
+            if doctor["id"] != doctor_id
+        ]
+
+        # ----------------------------------------------------
+        # Delete Doctor From SQLite
+        # ----------------------------------------------------
+
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            "DELETE FROM doctors WHERE id = ?",
+            (doctor_id,)
+        )
+
+        connection.commit()
+        connection.close()
+
+        # ----------------------------------------------------
         # Reset Edit Mode
         # ----------------------------------------------------
 
@@ -950,6 +1027,51 @@ def show_doctors(content_frame):
         show="headings"
     )
 
+    # ========================================================
+    # Load Doctors From Database
+    # ========================================================
+
+    def load_doctors():
+
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            SELECT id, name, specialization, phone, email, experience, fee
+            FROM doctors
+            ORDER BY id
+        """)
+
+        doctors = cursor.fetchall()
+
+        connection.close()
+
+        # Clear existing table rows
+        for item in doctor_table.get_children():
+            doctor_table.delete(item)
+
+        # Add database records to table
+        for doctor in doctors:
+
+            doctor_table.insert(
+                "",
+                "end",
+                values=doctor
+            )
+
+        # Update shared data
+        data.doctors.clear()
+
+        for doctor in doctors:
+
+            data.doctors.append({
+                "id": doctor[0],
+                "name": doctor[1],
+                "specialization": doctor[2]
+            })
+
+    load_doctors()
+        
     # ========================================================
     # Table Headings
     # ========================================================
